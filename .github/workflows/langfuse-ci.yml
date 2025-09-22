@@ -1,0 +1,35 @@
+name: Langfuse Prompt CI
+
+on:
+  repository_dispatch:
+    types: [langfuse-prompt-update]  # Triggered by Langfuse
+  workflow_dispatch:                 # Can also trigger manually
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Process prompt data
+        run: |
+          echo "Action: ${{ github.event.client_payload.action }}"
+          echo "Prompt: ${{ github.event.client_payload.prompt.name }}"
+          echo "Version: ${{ github.event.client_payload.prompt.version }}"
+          echo "Labels: ${{ github.event.client_payload.prompt.labels }}"
+      - name: Run tests
+        run: |
+          echo "Running tests for prompt ${{ github.event.client_payload.prompt.name }}"
+          # Add your actual test commands here
+          # npm test
+          # python -m pytest
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: contains(github.event.client_payload.prompt.labels, 'production')
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy production prompt
+        run: |
+          echo "Deploying ${{ github.event.client_payload.prompt.name }} v${{ github.event.client_payload.prompt.version }}"
+          # Add your deployment commands here
